@@ -1,6 +1,7 @@
 import Foundation
 import BackgroundTasks
 import UserNotifications
+import WidgetKit
 
 /// Runs the forecast daily in the background, writes the result to SharedStore
 /// (so Siri reads it with the app closed), and notifies the patient on elevated risk.
@@ -53,6 +54,7 @@ enum DailyScoreTask {
             let checkIn = store.loadCheckIns().first
             let snapshot = try await engine.score(profile: profile, vitals: vitals, weather: weather, checkIn: checkIn)
             try? store.saveRisk(snapshot)
+            WidgetCenter.shared.reloadAllTimelines()
 
             if snapshot.riskLevel.isElevated {
                 if let passport = try? await PassportService(claude: claude).draft(profile: profile, risk: snapshot, checkIn: checkIn) {

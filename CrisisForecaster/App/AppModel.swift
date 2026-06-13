@@ -1,5 +1,6 @@
 import Foundation
 import Observation
+import WidgetKit
 
 /// App-wide state and the orchestration entry point the UI, the background task,
 /// and (indirectly, via SharedStore) the Siri intents all flow through.
@@ -118,6 +119,7 @@ final class AppModel {
             risk = snapshot
             completedActions = []  // fresh forecast → fresh checklist
             try? store.saveRisk(snapshot)
+            WidgetCenter.shared.reloadAllTimelines()  // update the Home/Lock Screen widget now
 
             if snapshot.riskLevel.isElevated {
                 let drafted = try await PassportService(claude: ClaudeClient()).draft(profile: profile, risk: snapshot, checkIn: latestCheckIn)
