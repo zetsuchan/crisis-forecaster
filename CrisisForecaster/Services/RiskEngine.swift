@@ -59,6 +59,8 @@ struct RiskEngine: Sendable {
     - For each driver, `direction` describes how that METRIC moved, not the risk: \
       use "down" when the value fell (e.g. SpO2 0.98→0.93 is "down", HRV falling is \
       "down"), "up" when it rose (resting HR rising is "up"), "steady" otherwise.
+    - For each driver, `impact` is ONE short, plain sentence on why that signal \
+      matters for THIS patient's crisis risk (the patient taps to reveal it).
     """
 
     static func buildUserMessage(
@@ -119,11 +121,12 @@ struct RiskEngine: Sendable {
                 "items": [
                     "type": "object",
                     "additionalProperties": false,
-                    "required": ["factor", "detail", "direction"],
+                    "required": ["factor", "detail", "direction", "impact"],
                     "properties": [
                         "factor": ["type": "string"],
                         "detail": ["type": "string"],
                         "direction": ["type": "string", "enum": ["up", "down", "steady"], "description": "How the metric itself moved, not the risk."],
+                        "impact": ["type": "string", "description": "One short, plain sentence on why this signal matters for THIS patient's crisis risk."],
                     ],
                 ],
             ],

@@ -16,6 +16,8 @@ struct TrendRow: View {
     /// true if a rising value is concerning (e.g. resting HR); flips the delta color.
     let riseIsBad: Bool
 
+    @State private var selectedDate: Date?
+
     private var delta: Double? {
         guard let first = points.first?.value, let last = points.last?.value else { return nil }
         return last - first
@@ -28,11 +30,24 @@ struct TrendRow: View {
         return bad ? .orange : .green
     }
 
+    /// Nearest point to the scrub position.
+    private var selected: TrendPoint? {
+        guard let selectedDate else { return nil }
+        return points.min(by: {
+            abs($0.date.timeIntervalSince(selectedDate)) < abs($1.date.timeIntervalSince(selectedDate))
+        })
+    }
+
     var body: some View {
         HStack(spacing: 12) {
             VStack(alignment: .leading, spacing: 2) {
                 Text(title).font(.subheadline.bold())
-                if let delta {
+                if let selected {
+                    Text("\(format(selected.value)) \(unit)")
+                        .font(.caption.weight(.semibold))
+                        .foregroundStyle(.primary)
+                        .contentTransition(.numericText())
+                } else if let delta {
                     Text(deltaText(delta))
                         .font(.caption)
                         .foregroundStyle(deltaColor)
@@ -44,9 +59,16 @@ struct TrendRow: View {
                 LineMark(x: .value("Day", point.date), y: .value(title, point.value))
                     .interpolationMethod(.catmullRom)
                     .foregroundStyle(deltaColor)
+                if let selected, selected.id == point.id {
+                    PointMark(x: .value("Day", point.date), y: .value(title, point.value))
+                        .foregroundStyle(deltaColor)
+                    RuleMark(x: .value("Day", point.date))
+                        .foregroundStyle(.secondary.opacity(0.3))
+                }
             }
             .chartXAxis(.hidden)
             .chartYAxis(.hidden)
+            .chartXSelection(value: $selectedDate)
             .frame(height: 40)
         }
     }

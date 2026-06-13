@@ -2,11 +2,11 @@ import SwiftUI
 
 struct RootView: View {
     @Environment(AppModel.self) private var model
-    @State private var selection = ProcessInfo.processInfo.arguments.contains("-openPassport") ? "passport" : "today"
 
     var body: some View {
+        @Bindable var model = model
         if model.hasOnboarded {
-            TabView(selection: $selection) {
+            TabView(selection: $model.selectedTab) {
                 Tab("Today", systemImage: "waveform.path.ecg", value: "today") {
                     DashboardView()
                 }

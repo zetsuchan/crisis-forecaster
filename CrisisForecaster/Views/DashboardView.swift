@@ -31,6 +31,7 @@ struct DashboardView: View {
                         if !risk.actions.isEmpty {
                             card { ActionsSection(actions: risk.actions) }
                         }
+                        LogFeelingCTA()
                         if model.passport != nil {
                             PassportStagedNote()
                         }
@@ -135,14 +136,16 @@ private struct RefreshingBanner: View {
 /// Premium hero card: the risk ring on a soft, risk-tinted gradient.
 private struct RiskHero: View {
     let risk: RiskSnapshot
+    @State private var animate = false
     private var tint: Color { RiskStyle.color(risk.riskLevel) }
+    private var shownScore: Int { Int((animate ? risk.score : 0).rounded()) }
 
     var body: some View {
         VStack(spacing: 14) {
             ZStack {
                 Circle().stroke(tint.opacity(0.15), lineWidth: 16)
                 Circle()
-                    .trim(from: 0, to: risk.score / 100)
+                    .trim(from: 0, to: (animate ? risk.score : 0) / 100)
                     .stroke(tint, style: StrokeStyle(lineWidth: 16, lineCap: .round))
                     .rotationEffect(.degrees(-90))
                     .shadow(color: tint.opacity(0.35), radius: 6)
@@ -152,13 +155,18 @@ private struct RiskHero: View {
                         .foregroundStyle(tint)
                     Text(risk.riskLevel.title)
                         .font(.system(.largeTitle, design: .rounded, weight: .bold))
-                    Text("\(Int(risk.score)) / 100")
+                    Text("\(shownScore) / 100")
                         .font(.subheadline.weight(.medium))
                         .foregroundStyle(.secondary)
+                        .contentTransition(.numericText())
+                        .monospacedDigit()
                 }
             }
             .frame(width: 196, height: 196)
             .padding(.top, 8)
+            .onAppear {
+                withAnimation(.spring(duration: 1.1, bounce: 0.2)) { animate = true }
+            }
 
             VStack(spacing: 4) {
                 Text(risk.riskLevel.headline)
@@ -246,31 +254,108 @@ private struct ExplanationCard: View {
 private struct DriversSection: View {
     let drivers: [RiskDriver]
     var body: some View {
-        VStack(alignment: .leading, spacing: 12) {
+        VStack(alignment: .leading, spacing: 4) {
             Text("What's driving it").font(.headline)
+            Text("Tap any signal to see why it matters for you")
+                .font(.caption2).foregroundStyle(.secondary)
             ForEach(drivers) { driver in
-                HStack(alignment: .top, spacing: 12) {
-                    Image(systemName: driver.direction.symbol)
-                        .foregroundStyle(.secondary).frame(width: 24)
-                    VStack(alignment: .leading) {
-                        Text(driver.factor).font(.subheadline.bold())
-                        Text(driver.detail).font(.subheadline).foregroundStyle(.secondary)
-                    }
-                }
+                DriverRow(driver: driver)
             }
         }
     }
 }
 
-private struct ActionsSection: View {
-    let actions: [String]
+private struct DriverRow: View {
+    let driver: RiskDriver
+    @State private var expanded = false
+
     var body: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            Text("What to do").font(.headline)
-            ForEach(Array(actions.enumerated()), id: \.offset) { _, action in
-                Label(action, systemImage: "checkmark.circle").font(.subheadline)
+        VStack(alignment: .leading, spacing: 8) {
+            Button {
+                withAnimation(.snappy) { expanded.toggle() }
+            } label: {
+                HStack(alignment: .top, spacing: 12) {
+                    Image(systemName: driver.direction.symbol)
+                        .foregroundStyle(.secondary).frame(width: 24)
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text(driver.factor).font(.subheadline.bold())
+                        Text(driver.detail).font(.subheadline).foregroundStyle(.secondary)
+                    }
+                    Spacer()
+                    if !driver.impact.isEmpty {
+                        Image(systemName: "chevron.down")
+                            .font(.caption.weight(.semibold))
+                            .foregroundStyle(.tertiary)
+                            .rotationEffect(.degrees(expanded ? 180 : 0))
+                    }
+                }
+                .contentShape(Rectangle())
+            }
+            .buttonStyle(.plain)
+
+            if expanded && !driver.impact.isEmpty {
+                Text(driver.impact)
+                    .font(.subheadline)
+                    .foregroundStyle(.secondary)
+                    .padding(.leading, 36)
+                    .transition(.opacity.combined(with: .move(edge: .top)))
             }
         }
+        .padding(.vertical, 4)
+    }
+}
+
+private struct ActionsSection: View {
+    @Environment(AppModel.self) private var model
+    let actions: [String]
+
+    private var doneCount: Int { actions.filter { model.completedActions.contains($0) }.count }
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            HStack {
+                Text("What to do").font(.headline)
+                Spacer()
+                Text("\(doneCount)/\(actions.count) done")
+                    .font(.caption).foregroundStyle(.secondary)
+                    .contentTransition(.numericText())
+            }
+            ForEach(Array(actions.enumerated()), id: \.offset) { _, action in
+                let done = model.completedActions.contains(action)
+                Button {
+                    withAnimation(.snappy) { model.toggleAction(action) }
+                } label: {
+                    HStack(alignment: .top, spacing: 10) {
+                        Image(systemName: done ? "checkmark.circle.fill" : "circle")
+                            .foregroundStyle(done ? Color.green : Color.secondary)
+                        Text(action)
+                            .font(.subheadline)
+                            .strikethrough(done, color: .secondary)
+                            .foregroundStyle(done ? .secondary : .primary)
+                        Spacer()
+                    }
+                    .contentShape(Rectangle())
+                }
+                .buttonStyle(.plain)
+            }
+        }
+    }
+}
+
+/// Prominent next-step that links Today → Check-in.
+private struct LogFeelingCTA: View {
+    @Environment(AppModel.self) private var model
+    var body: some View {
+        Button {
+            withAnimation { model.selectedTab = "checkin" }
+        } label: {
+            Label("How are you feeling right now?", systemImage: "plus.circle.fill")
+                .font(.headline)
+                .frame(maxWidth: .infinity)
+                .padding(.vertical, 4)
+        }
+        .buttonStyle(.glassProminent)
+        .controlSize(.large)
     }
 }
 

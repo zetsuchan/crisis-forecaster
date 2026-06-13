@@ -41,6 +41,12 @@ final class AppModel {
     /// Result of the on-device (Apple Intelligence) triage of the latest check-in.
     var lastTriage: TriageResult?
 
+    /// Which tab is showing (lets the Today CTA jump to Check-in).
+    var selectedTab: String = "today"
+
+    /// Recommended actions the patient has checked off for the current forecast.
+    var completedActions: Set<String> = []
+
     private let store = SharedStore()
     private let defaults = UserDefaults.standard
     private static let demoModeKey = "demoMode"
@@ -59,6 +65,15 @@ final class AppModel {
         risk = store.loadRisk()
         passport = store.loadPassport()
         checkIns = store.loadCheckIns()
+        if ProcessInfo.processInfo.arguments.contains("-openPassport") {
+            selectedTab = "passport"
+        }
+    }
+
+    /// Toggle a recommended action's done state for the current forecast.
+    func toggleAction(_ action: String) {
+        if completedActions.contains(action) { completedActions.remove(action) }
+        else { completedActions.insert(action) }
     }
 
     /// Record a self-report. The on-device Apple model triages it first (private,
@@ -101,6 +116,7 @@ final class AppModel {
 
             let snapshot = try await engine.score(profile: profile, vitals: gathered, weather: weather, checkIn: latestCheckIn, triageNote: lastTriage?.summary)
             risk = snapshot
+            completedActions = []  // fresh forecast → fresh checklist
             try? store.saveRisk(snapshot)
 
             if snapshot.riskLevel.isElevated {

@@ -7,6 +7,8 @@ struct RiskDriver: Codable, Sendable, Identifiable, Hashable {
     var factor: String
     var detail: String
     var direction: Direction
+    /// One grounded sentence: why this signal matters for THIS patient. Shown on tap.
+    var impact: String
 
     enum Direction: String, Codable, Sendable {
         case up
@@ -23,13 +25,14 @@ struct RiskDriver: Codable, Sendable, Identifiable, Hashable {
     }
 
     private enum CodingKeys: String, CodingKey {
-        case factor, detail, direction
+        case factor, detail, direction, impact
     }
 
-    init(factor: String, detail: String, direction: Direction) {
+    init(factor: String, detail: String, direction: Direction, impact: String = "") {
         self.factor = factor
         self.detail = detail
         self.direction = direction
+        self.impact = impact
     }
 
     init(from decoder: Decoder) throws {
@@ -37,6 +40,7 @@ struct RiskDriver: Codable, Sendable, Identifiable, Hashable {
         factor = try c.decode(String.self, forKey: .factor)
         detail = try c.decode(String.self, forKey: .detail)
         direction = try c.decode(Direction.self, forKey: .direction)
+        impact = (try c.decodeIfPresent(String.self, forKey: .impact)) ?? ""
         id = UUID()
     }
 }
