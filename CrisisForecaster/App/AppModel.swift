@@ -126,6 +126,22 @@ final class AppModel {
         }
     }
 
+    /// Wipe everything and return to a fresh onboarding (for clean demo recordings).
+    func resetAll() {
+        store.clearAll()
+        defaults.removeObject(forKey: Self.onboardedKey)
+        defaults.removeObject(forKey: Self.demoModeKey)
+        risk = nil
+        passport = nil
+        checkIns = []
+        lastTriage = nil
+        vitals = []
+        profile = .demo
+        demoMode = true
+        phase = .idle
+        hasOnboarded = false
+    }
+
     /// Called at the end of onboarding: persist choices, then run the first forecast.
     func completeOnboarding(profile: PatientProfile, demoMode: Bool) async {
         self.profile = profile

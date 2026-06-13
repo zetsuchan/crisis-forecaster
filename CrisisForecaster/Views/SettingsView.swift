@@ -3,6 +3,7 @@ import SwiftUI
 struct SettingsView: View {
     @Environment(AppModel.self) private var model
     @State private var editingProfile = false
+    @State private var confirmReset = false
 
     var body: some View {
         @Bindable var model = model
@@ -37,10 +38,24 @@ struct SettingsView: View {
                         Text(message).foregroundStyle(.red)
                     }
                 }
+
+                Section {
+                    Button("Start over (reset onboarding)", role: .destructive) {
+                        confirmReset = true
+                    }
+                } footer: {
+                    Text("Wipes your profile, check-ins, and forecasts on this device and returns to onboarding. Useful for a fresh demo recording.")
+                }
             }
             .navigationTitle("Settings")
             .sheet(isPresented: $editingProfile) {
                 ProfileEditor()
+            }
+            .confirmationDialog("Start over?", isPresented: $confirmReset, titleVisibility: .visible) {
+                Button("Reset everything", role: .destructive) { model.resetAll() }
+                Button("Cancel", role: .cancel) {}
+            } message: {
+                Text("This clears all on-device data and returns to onboarding.")
             }
         }
     }

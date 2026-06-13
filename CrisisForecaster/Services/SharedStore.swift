@@ -65,6 +65,15 @@ struct SharedStore: Sendable {
         read("check_ins") ?? []
     }
 
+    // MARK: Reset
+
+    /// Wipe all persisted state (for a fresh onboarding / clean demo recording).
+    func clearAll() {
+        for name in ["risk_snapshot", "emergency_passport", "patient_profile", "check_ins"] {
+            if let url = url(for: name) { try? FileManager.default.removeItem(at: url) }
+        }
+    }
+
     // MARK: IO
 
     private func write<T: Encodable>(_ value: T, to name: String) throws {
