@@ -1,0 +1,60 @@
+name: CrisisForecaster
+options:
+  bundleIdPrefix: com.crisisforecaster
+  deploymentTarget:
+    iOS: "27.0"
+  createIntermediateGroups: true
+  developmentLanguage: en
+
+settings:
+  base:
+    SWIFT_VERSION: "6.4"
+    MARKETING_VERSION: "0.1.0"
+    CURRENT_PROJECT_VERSION: "1"
+    GENERATE_INFOPLIST_FILE: NO
+    ENABLE_USER_SCRIPT_SANDBOXING: YES
+    SWIFT_STRICT_CONCURRENCY: complete
+
+configFiles:
+  Debug: Config/Secrets.xcconfig
+  Release: Config/Secrets.xcconfig
+
+targets:
+  CrisisForecaster:
+    type: application
+    platform: iOS
+    sources:
+      - path: CrisisForecaster
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.crisisforecaster.app
+        INFOPLIST_FILE: CrisisForecaster/Info.plist
+        CODE_SIGN_ENTITLEMENTS: CrisisForecaster/CrisisForecaster.entitlements
+        ANTHROPIC_API_KEY: $(ANTHROPIC_API_KEY)
+        # Per-user override of the API key lives in Config/Secrets.xcconfig (gitignored).
+        TARGETED_DEVICE_FAMILY: "1"
+        SUPPORTS_MACCATALYST: NO
+    entitlements:
+      path: CrisisForecaster/CrisisForecaster.entitlements
+      properties:
+        com.apple.developer.healthkit: true
+        com.apple.developer.weatherkit: true
+        com.apple.security.application-groups:
+          - group.com.crisisforecaster.app
+    info:
+      path: CrisisForecaster/Info.plist
+      properties:
+        CFBundleDisplayName: Crisis Forecaster
+        CFBundleShortVersionString: $(MARKETING_VERSION)
+        CFBundleVersion: $(CURRENT_PROJECT_VERSION)
+        UILaunchScreen: {}
+        UIApplicationSceneManifest:
+          UIApplicationSupportsMultipleScenes: false
+        NSHealthShareUsageDescription: "Crisis Forecaster reads your resting heart rate, heart rate variability, blood oxygen, and sleep to forecast vaso-occlusive crisis risk."
+        NSLocationWhenInUseUsageDescription: "Crisis Forecaster uses your location to read local barometric pressure and humidity, which are crisis triggers."
+        BGTaskSchedulerPermittedIdentifiers:
+          - com.crisisforecaster.app.dailyScore
+        ANTHROPIC_API_KEY: $(ANTHROPIC_API_KEY)
+        UIBackgroundModes:
+          - processing
+        ITSAppUsesNonExemptEncryption: false

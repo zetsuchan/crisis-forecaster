@@ -1,0 +1,16 @@
+[
+  { "dayOffset": 0,  "restingHeartRate": 61, "hrv": 64, "spo2": 0.98, "sleepHours": 7.8, "sleepFragmentation": 0.10 },
+  { "dayOffset": 1,  "restingHeartRate": 62, "hrv": 63, "spo2": 0.98, "sleepHours": 7.6, "sleepFragmentation": 0.11 },
+  { "dayOffset": 2,  "restingHeartRate": 62, "hrv": 62, "spo2": 0.97, "sleepHours": 7.7, "sleepFragmentation": 0.12 },
+  { "dayOffset": 3,  "restingHeartRate": 63, "hrv": 61, "spo2": 0.97, "sleepHours": 7.4, "sleepFragmentation": 0.13 },
+  { "dayOffset": 4,  "restingHeartRate": 63, "hrv": 60, "spo2": 0.97, "sleepHours": 7.2, "sleepFragmentation": 0.15 },
+  { "dayOffset": 5,  "restingHeartRate": 64, "hrv": 58, "spo2": 0.97, "sleepHours": 6.9, "sleepFragmentation": 0.18 },
+  { "dayOffset": 6,  "restingHeartRate": 65, "hrv": 56, "spo2": 0.96, "sleepHours": 6.7, "sleepFragmentation": 0.21 },
+  { "dayOffset": 7,  "restingHeartRate": 66, "hrv": 54, "spo2": 0.96, "sleepHours": 6.4, "sleepFragmentation": 0.24 },
+  { "dayOffset": 8,  "restingHeartRate": 67, "hrv": 51, "spo2": 0.95, "sleepHours": 6.1, "sleepFragmentation": 0.28 },
+  { "dayOffset": 9,  "restingHeartRate": 68, "hrv": 49, "spo2": 0.95, "sleepHours": 5.9, "sleepFragmentation": 0.31 },
+  { "dayOffset": 10, "restingHeartRate": 69, "hrv": 47, "spo2": 0.94, "sleepHours": 5.6, "sleepFragmentation": 0.35 },
+  { "dayOffset": 11, "restingHeartRate": 70, "hrv": 45, "spo2": 0.94, "sleepHours": 5.4, "sleepFragmentation": 0.38 },
+  { "dayOffset": 12, "restingHeartRate": 71, "hrv": 43, "spo2": 0.93, "sleepHours": 5.1, "sleepFragmentation": 0.42 },
+  { "dayOffset": 13, "restingHeartRate": 70, "hrv": 42, "spo2": 0.93, "sleepHours": 5.0, "sleepFragmentation": 0.45 }
+]
