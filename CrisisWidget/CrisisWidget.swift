@@ -35,8 +35,53 @@ struct CrisisWidgetEntryView: View {
         case .accessoryCircular: circular
         case .accessoryRectangular: rectangular
         case .accessoryInline: inline
+        case .systemMedium: medium
         default: small
         }
+    }
+
+    // Home Screen (systemMedium) — ring + plain-language headline
+    private var medium: some View {
+        HStack(spacing: 16) {
+            if let risk = entry.risk {
+                VStack(spacing: 2) {
+                    Image(systemName: RiskStyle.icon(risk.riskLevel))
+                        .font(.title2)
+                        .foregroundStyle(RiskStyle.color(risk.riskLevel))
+                    Text(risk.riskLevel.title)
+                        .font(.system(.title2, design: .rounded, weight: .bold))
+                    Text("\(Int(risk.score)) / 100")
+                        .font(.caption2).foregroundStyle(.secondary)
+                }
+                .frame(width: 96)
+                VStack(alignment: .leading, spacing: 4) {
+                    Text("Crisis risk · next \(risk.windowHours)h")
+                        .font(.caption).foregroundStyle(.secondary)
+                    Text(risk.riskLevel.headline)
+                        .font(.subheadline.weight(.semibold))
+                        .lineLimit(3)
+                }
+                .frame(maxWidth: .infinity, alignment: .leading)
+            } else {
+                noForecast
+            }
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .containerBackground(for: .widget) {
+            if let risk = entry.risk {
+                RiskStyle.color(risk.riskLevel).opacity(0.12)
+            } else {
+                Color.clear
+            }
+        }
+    }
+
+    private var noForecast: some View {
+        VStack(spacing: 6) {
+            Image(systemName: "waveform.path.ecg").font(.title2).foregroundStyle(.secondary)
+            Text("No forecast yet").font(.caption).foregroundStyle(.secondary)
+        }
+        .frame(maxWidth: .infinity)
     }
 
     // Home Screen (systemSmall)
@@ -118,7 +163,7 @@ struct CrisisWidget: Widget {
         }
         .configurationDisplayName("Crisis Risk")
         .description("Your latest vaso-occlusive crisis risk, on the Home and Lock Screen.")
-        .supportedFamilies([.systemSmall, .accessoryRectangular, .accessoryCircular, .accessoryInline])
+        .supportedFamilies([.systemSmall, .systemMedium, .accessoryRectangular, .accessoryCircular, .accessoryInline])
     }
 }
 
