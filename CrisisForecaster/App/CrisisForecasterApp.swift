@@ -15,9 +15,16 @@ struct CrisisForecasterApp: App {
                 .task {
                     DailyScoreTask.schedule()
                     if ProcessInfo.processInfo.arguments.contains("-autorunForecast") {
-                        // Demo/automation hook: skip onboarding and force a fresh score.
+                        // Demo/automation hook: skip onboarding and exercise the full
+                        // dual-model flow (on-device triage → Claude forecast) via a
+                        // sample check-in.
                         model.hasOnboarded = true
-                        await model.runScore()
+                        await model.addCheckIn(CheckIn(
+                            painLevel: 6,
+                            painLocations: ["Back", "Legs"],
+                            hydration: .low,
+                            notes: "Aching more than usual since the cold came in."
+                        ))
                     } else {
                         // Ambient: refresh quietly if the last forecast is stale.
                         await model.refreshIfStale()

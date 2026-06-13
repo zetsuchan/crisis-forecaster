@@ -55,6 +55,16 @@ struct SharedStore: Sendable {
         read("patient_profile")
     }
 
+    // MARK: Check-ins
+
+    func saveCheckIns(_ checkIns: [CheckIn]) throws {
+        try write(checkIns, to: "check_ins")
+    }
+
+    func loadCheckIns() -> [CheckIn] {
+        read("check_ins") ?? []
+    }
+
     // MARK: IO
 
     private func write<T: Encodable>(_ value: T, to name: String) throws {

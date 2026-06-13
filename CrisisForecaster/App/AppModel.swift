@@ -34,6 +34,13 @@ final class AppModel {
     var passport: EmergencyPassport?
     var phase: Phase = .idle
 
+    /// Patient self-reports, most recent first. Folds into the forecast + passport.
+    var checkIns: [CheckIn] = []
+    var latestCheckIn: CheckIn? { checkIns.first }
+
+    /// Result of the on-device (Apple Intelligence) triage of the latest check-in.
+    var lastTriage: TriageResult?
+
     private let store = SharedStore()
     private let defaults = UserDefaults.standard
     private static let demoModeKey = "demoMode"
@@ -51,6 +58,16 @@ final class AppModel {
         profile = store.loadProfile() ?? .demo
         risk = store.loadRisk()
         passport = store.loadPassport()
+        checkIns = store.loadCheckIns()
+    }
+
+    /// Record a self-report. The on-device Apple model triages it first (private,
+    /// instant); then Claude re-runs the full forecast informed by that digest.
+    func addCheckIn(_ checkIn: CheckIn) async {
+        checkIns.insert(checkIn, at: 0)
+        try? store.saveCheckIns(checkIns)
+        lastTriage = await OnDeviceTriage().assess(checkIn: checkIn, profile: profile)
+        await runScore()
     }
 
     private var healthSource: HealthDataSource {
@@ -82,12 +99,12 @@ final class AppModel {
             let weather = try await weatherProvider.currentWeather()
             vitals = gathered
 
-            let snapshot = try await engine.score(profile: profile, vitals: gathered, weather: weather)
+            let snapshot = try await engine.score(profile: profile, vitals: gathered, weather: weather, checkIn: latestCheckIn, triageNote: lastTriage?.summary)
             risk = snapshot
             try? store.saveRisk(snapshot)
 
             if snapshot.riskLevel.isElevated {
-                let drafted = try await PassportService(claude: ClaudeClient()).draft(profile: profile, risk: snapshot)
+                let drafted = try await PassportService(claude: ClaudeClient()).draft(profile: profile, risk: snapshot, checkIn: latestCheckIn)
                 passport = drafted
                 try? store.savePassport(drafted)
             }
@@ -101,7 +118,7 @@ final class AppModel {
     func stagePassport() async {
         guard let risk else { return }
         do {
-            let drafted = try await PassportService(claude: ClaudeClient()).draft(profile: profile, risk: risk)
+            let drafted = try await PassportService(claude: ClaudeClient()).draft(profile: profile, risk: risk, checkIn: latestCheckIn)
             passport = drafted
             try? store.savePassport(drafted)
         } catch {

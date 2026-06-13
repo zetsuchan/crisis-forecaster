@@ -50,11 +50,12 @@ enum DailyScoreTask {
         do {
             let vitals = try await health.recentVitals(days: 14)
             let weather = try await weatherProvider.currentWeather()
-            let snapshot = try await engine.score(profile: profile, vitals: vitals, weather: weather)
+            let checkIn = store.loadCheckIns().first
+            let snapshot = try await engine.score(profile: profile, vitals: vitals, weather: weather, checkIn: checkIn)
             try? store.saveRisk(snapshot)
 
             if snapshot.riskLevel.isElevated {
-                if let passport = try? await PassportService(claude: claude).draft(profile: profile, risk: snapshot) {
+                if let passport = try? await PassportService(claude: claude).draft(profile: profile, risk: snapshot, checkIn: checkIn) {
                     try? store.savePassport(passport)
                 }
                 await notify(snapshot)

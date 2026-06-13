@@ -2,6 +2,7 @@ import SwiftUI
 
 struct DashboardView: View {
     @Environment(AppModel.self) private var model
+    @State private var showProfile = false
 
     var body: some View {
         NavigationStack {
@@ -15,7 +16,11 @@ struct DashboardView: View {
                         if model.phase == .scoring {
                             RefreshingBanner()
                         }
-                        RiskRing(risk: risk)
+                        RiskHero(risk: risk)
+                        EngineBadges()
+                        if let triage = model.lastTriage {
+                            TriageNoteCard(triage: triage)
+                        }
                         ExplanationCard(text: risk.explanation)
                         if !model.vitals.isEmpty {
                             card { TrendsSection(vitals: model.vitals) }
@@ -54,6 +59,9 @@ struct DashboardView: View {
             .navigationTitle("Today")
             .refreshable { await model.runScore() }
             .toolbar {
+                ToolbarItem(placement: .topBarLeading) {
+                    ProfileAvatarButton(name: model.profile.fullName) { showProfile = true }
+                }
                 ToolbarItem(placement: .topBarTrailing) {
                     Button {
                         Task { await model.runScore() }
@@ -63,6 +71,7 @@ struct DashboardView: View {
                     .disabled(model.phase == .scoring)
                 }
             }
+            .sheet(isPresented: $showProfile) { ProfileView() }
         }
     }
 
@@ -123,34 +132,103 @@ private struct RefreshingBanner: View {
     }
 }
 
-private struct RiskRing: View {
+/// Premium hero card: the risk ring on a soft, risk-tinted gradient.
+private struct RiskHero: View {
     let risk: RiskSnapshot
+    private var tint: Color { RiskStyle.color(risk.riskLevel) }
 
     var body: some View {
-        VStack(spacing: 8) {
+        VStack(spacing: 14) {
             ZStack {
-                Circle().stroke(.quaternary, lineWidth: 14)
+                Circle().stroke(tint.opacity(0.15), lineWidth: 16)
                 Circle()
                     .trim(from: 0, to: risk.score / 100)
-                    .stroke(RiskStyle.color(risk.riskLevel), style: StrokeStyle(lineWidth: 14, lineCap: .round))
+                    .stroke(tint, style: StrokeStyle(lineWidth: 16, lineCap: .round))
                     .rotationEffect(.degrees(-90))
-                VStack {
+                    .shadow(color: tint.opacity(0.35), radius: 6)
+                VStack(spacing: 2) {
                     Image(systemName: RiskStyle.icon(risk.riskLevel))
                         .font(.title)
-                        .foregroundStyle(RiskStyle.color(risk.riskLevel))
-                    Text(risk.riskLevel.title).font(.title2.bold())
-                    Text("\(Int(risk.score)) / 100").font(.subheadline).foregroundStyle(.secondary)
+                        .foregroundStyle(tint)
+                    Text(risk.riskLevel.title)
+                        .font(.system(.largeTitle, design: .rounded, weight: .bold))
+                    Text("\(Int(risk.score)) / 100")
+                        .font(.subheadline.weight(.medium))
+                        .foregroundStyle(.secondary)
                 }
             }
-            .frame(width: 200, height: 200)
+            .frame(width: 196, height: 196)
+            .padding(.top, 8)
 
-            Text(risk.riskLevel.headline)
-                .font(.headline)
-                .multilineTextAlignment(.center)
-            Text("Next \(risk.windowHours) hours")
-                .font(.caption)
-                .foregroundStyle(.secondary)
+            VStack(spacing: 4) {
+                Text(risk.riskLevel.headline)
+                    .font(.headline)
+                    .multilineTextAlignment(.center)
+                Label("Next \(risk.windowHours) hours", systemImage: "clock")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+            }
+            .padding(.bottom, 8)
         }
+        .frame(maxWidth: .infinity)
+        .padding()
+        .background(
+            LinearGradient(
+                colors: [tint.opacity(0.18), tint.opacity(0.04)],
+                startPoint: .top, endPoint: .bottom
+            ),
+            in: RoundedRectangle(cornerRadius: 24)
+        )
+        .overlay(
+            RoundedRectangle(cornerRadius: 24).stroke(tint.opacity(0.2), lineWidth: 1)
+        )
+    }
+}
+
+/// Shows the dual-model architecture: Apple's on-device model + Claude Opus 4.8.
+private struct EngineBadges: View {
+    var body: some View {
+        HStack(spacing: 8) {
+            badge("apple.logo", "Apple Intelligence", "on-device triage", .secondary)
+            badge("sparkles", "Claude Opus 4.8", "forecast", .orange)
+        }
+        .frame(maxWidth: .infinity)
+    }
+
+    private func badge(_ icon: String, _ title: String, _ subtitle: String, _ tint: Color) -> some View {
+        HStack(spacing: 8) {
+            Image(systemName: icon).font(.callout).foregroundStyle(tint)
+            VStack(alignment: .leading, spacing: 0) {
+                Text(title).font(.caption.weight(.semibold))
+                Text(subtitle).font(.caption2).foregroundStyle(.secondary)
+            }
+        }
+        .padding(.horizontal, 12).padding(.vertical, 8)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(.thinMaterial, in: RoundedRectangle(cornerRadius: 12))
+    }
+}
+
+/// The on-device triage of the latest self-report (Apple Intelligence).
+private struct TriageNoteCard: View {
+    let triage: TriageResult
+    var body: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            HStack {
+                Label("Read on-device", systemImage: "apple.logo")
+                    .font(.caption.weight(.semibold))
+                    .foregroundStyle(.secondary)
+                Spacer()
+                Text("concern \(triage.concern)/10")
+                    .font(.caption.weight(.semibold))
+                    .foregroundStyle(triage.concern >= 6 ? .orange : .secondary)
+            }
+            Text(triage.summary).font(.subheadline)
+            Text(triage.source.label).font(.caption2).foregroundStyle(.tertiary)
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding()
+        .background(.thinMaterial, in: RoundedRectangle(cornerRadius: 16))
     }
 }
 

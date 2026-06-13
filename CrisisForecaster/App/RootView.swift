@@ -10,6 +10,9 @@ struct RootView: View {
                 Tab("Today", systemImage: "waveform.path.ecg", value: "today") {
                     DashboardView()
                 }
+                Tab("Check in", systemImage: "figure.mind.and.body", value: "checkin") {
+                    CheckInView()
+                }
                 Tab("Passport", systemImage: "cross.case", value: "passport") {
                     PassportView()
                 }

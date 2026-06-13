@@ -15,6 +15,21 @@ vitals + WeatherKit and asks **Claude Opus 4.8** to score crisis risk 24–72h o
 > their data for clinicians — it does not diagnose, prescribe, or replace a care team.
 > In an emergency, call 911 or your hematologist.
 
+## Dual-model architecture (the iOS 27 spin)
+
+Two models, clean division of labor:
+
+- **Apple Foundation Models (on-device, iOS 27 `SystemLanguageModel`) — the triage nurse.**
+  When the patient logs a check-in, the on-device model privately + instantly reads their
+  free text, normalizes it into a clean clinical line, scores concern, and decides whether
+  to escalate. No network, no data leaving the device. (`Services/OnDeviceTriage.swift`,
+  guided generation via `@Generable`; availability-gated with a transparent fallback.)
+- **Claude Opus 4.8 (cloud) — the specialist.** Takes the on-device digest plus 14 days of
+  vitals and the weather and does the deep 24–72h forecast + the ER Passport.
+
+Cheap/private/local pre-digestion → frontier reasoning. The Today tab surfaces both
+("Apple Intelligence · on-device" + "Claude Opus 4.8") so the flow is legible.
+
 ## What this is (and is not)
 
 - **It is:** a predictive agent + an ambient Siri delivery layer + a document-staging

@@ -9,9 +9,11 @@ struct RiskEngine: Sendable {
     func score(
         profile: PatientProfile,
         vitals: [VitalsSnapshot],
-        weather: WeatherSnapshot
+        weather: WeatherSnapshot,
+        checkIn: CheckIn? = nil,
+        triageNote: String? = nil
     ) async throws -> RiskSnapshot {
-        let user = Self.buildUserMessage(vitals: vitals, weather: weather, profile: profile)
+        let user = Self.buildUserMessage(vitals: vitals, weather: weather, profile: profile, checkIn: checkIn, triageNote: triageNote)
         return try await claude.completeJSON(
             system: Self.systemPrompt,
             user: user,
@@ -62,7 +64,9 @@ struct RiskEngine: Sendable {
     static func buildUserMessage(
         vitals: [VitalsSnapshot],
         weather: WeatherSnapshot,
-        profile: PatientProfile
+        profile: PatientProfile,
+        checkIn: CheckIn? = nil,
+        triageNote: String? = nil
     ) -> String {
         let encoder = JSONEncoder()
         encoder.dateEncodingStrategy = .iso8601
@@ -83,9 +87,21 @@ struct RiskEngine: Sendable {
 
         Current / incoming local weather, JSON:
         \(encode(weather))
-
+        \(selfReportLine(checkIn: checkIn, triageNote: triageNote))
         Score the VOC crisis risk for the next 24–72 hours and explain why.
         """
+    }
+
+    /// Prefer the on-device triage digest (Apple Intelligence) when present;
+    /// otherwise fall back to the raw check-in line.
+    private static func selfReportLine(checkIn: CheckIn?, triageNote: String?) -> String {
+        if let triageNote {
+            return "\nOn-device triage of the patient's check-in (Apple Intelligence): \(triageNote) Weigh this self-report heavily."
+        }
+        if let checkIn {
+            return "\nThe patient's own check-in today: \(checkIn.promptLine). Weigh this self-report heavily."
+        }
+        return ""
     }
 
     // MARK: Structured-output schema (mirrors RiskSnapshot wire format)

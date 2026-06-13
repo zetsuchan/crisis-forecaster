@@ -46,7 +46,7 @@ struct PassportService: Sendable {
         ],
     ]}
 
-    func draft(profile: PatientProfile, risk: RiskSnapshot) async throws -> EmergencyPassport {
+    func draft(profile: PatientProfile, risk: RiskSnapshot, checkIn: CheckIn? = nil) async throws -> EmergencyPassport {
         let riskContext = "\(risk.riskLevel.title) risk (\(Int(risk.score))/100), \(risk.windowHours)h window"
         let user = """
         Patient: \(profile.fullName)
@@ -57,6 +57,7 @@ struct PassportService: Sendable {
         Allergies: \(profile.allergies.joined(separator: "; "))
         Pain plan: \(profile.painPlan)
         Notes: \(profile.notes)
+        \(checkIn.map { "Patient's current self-report: \($0.promptLine)" } ?? "")
 
         Current risk context: \(riskContext). \(risk.explanation)
         """
