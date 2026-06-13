@@ -7,7 +7,7 @@ struct OnboardingView: View {
 
     private enum Step: Int, CaseIterable { case welcome, how, profile, data }
     @State private var step: Step = .welcome
-    @State private var profile: PatientProfile = .demo
+    @State private var profile: PatientProfile = .recordingStarter
     @State private var demoMode = true
     @State private var finishing = false
 
@@ -25,7 +25,6 @@ struct OnboardingView: View {
             .navigationTitle(title)
             .navigationBarTitleDisplayMode(.inline)
         }
-        .onAppear { profile = model.profile }
     }
 
     private var title: String {
@@ -139,15 +138,15 @@ private struct DataSourceStep: View {
         ScrollView {
             VStack(spacing: 16) {
                 choice(
-                    title: "Use Demo data",
-                    detail: "Replays a realistic 14-day decline. Great for trying it out — no permissions needed.",
-                    icon: "play.circle.fill",
+                    title: "Sample data",
+                    detail: "A realistic 14-day window grounded in an Apple Watch baseline. No permissions needed — best for a quick, repeatable demo.",
+                    icon: "waveform.path.ecg.rectangle.fill",
                     selected: demoMode
                 ) { demoMode = true }
 
                 choice(
                     title: "Connect Apple Health",
-                    detail: "Reads your real heart rate, blood oxygen, and sleep. You'll be asked for permission.",
+                    detail: "Reads your real resting heart rate, HRV, blood oxygen, and sleep live. Best on a device you wear daily.",
                     icon: "heart.text.square.fill",
                     selected: !demoMode
                 ) { demoMode = false }

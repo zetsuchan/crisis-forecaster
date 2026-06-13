@@ -23,6 +23,24 @@ struct PatientProfile: Codable, Sendable {
         fullName.split(separator: " ").first.map(String.init) ?? ""
     }
 
+    /// Starting point for a real user's onboarding: blank identity, but baseline
+    /// vitals pre-filled from the user's own Apple Watch history (resting HR 55,
+    /// SpO2 ~97%) so the Passport is grounded without making them look those up.
+    static let recordingStarter = PatientProfile(
+        fullName: "",
+        variant: "HbSS",
+        baselineRestingHR: 55,
+        baselineSpO2: 0.97,
+        medications: [],
+        painPlan: "",
+        allergies: [],
+        hematologistName: "",
+        hematologistPhone: "",
+        emergencyContactName: "",
+        emergencyContactPhone: "",
+        notes: ""
+    )
+
     static let empty = PatientProfile(
         fullName: "",
         variant: "HbSS",
