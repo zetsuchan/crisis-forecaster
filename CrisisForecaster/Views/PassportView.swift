@@ -66,7 +66,7 @@ struct PassportView: View {
             } label: {
                 if staging { ProgressView() } else { Label("Stage passport now", systemImage: "cross.case.fill") }
             }
-            .buttonStyle(.borderedProminent)
+            .buttonStyle(.glassProminent)
             .disabled(model.risk == nil || staging)
             if model.risk == nil {
                 Text("Run a forecast first.").font(.caption).foregroundStyle(.secondary)
@@ -223,7 +223,7 @@ private struct SectionCard<Content: View>: View {
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding()
-        .background(.thinMaterial, in: RoundedRectangle(cornerRadius: 16))
+        .glassCard(16)
     }
 }
 

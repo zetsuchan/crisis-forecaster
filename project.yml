@@ -14,6 +14,9 @@ settings:
     GENERATE_INFOPLIST_FILE: NO
     ENABLE_USER_SCRIPT_SANDBOXING: YES
     SWIFT_STRICT_CONCURRENCY: complete
+    # Signing team comes from Config/Secrets.xcconfig (gitignored); empty = unsigned sim build.
+    DEVELOPMENT_TEAM: $(DEVELOPMENT_TEAM)
+    CODE_SIGN_STYLE: Automatic
 
 configFiles:
   Debug: Config/Secrets.xcconfig
@@ -25,6 +28,9 @@ targets:
     platform: iOS
     sources:
       - path: CrisisForecaster
+    dependencies:
+      - target: CrisisWidget
+        embed: true
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.crisisforecaster.app
@@ -58,3 +64,35 @@ targets:
         UIBackgroundModes:
           - processing
         ITSAppUsesNonExemptEncryption: false
+
+  CrisisWidget:
+    type: app-extension
+    platform: iOS
+    sources:
+      - path: CrisisWidget
+      # Shared model + storage code (compiled into both targets).
+      - path: CrisisForecaster/Models/RiskSnapshot.swift
+      - path: CrisisForecaster/Models/RiskDriver.swift
+      - path: CrisisForecaster/Models/EmergencyPassport.swift
+      - path: CrisisForecaster/Models/PatientProfile.swift
+      - path: CrisisForecaster/Models/CheckIn.swift
+      - path: CrisisForecaster/Services/SharedStore.swift
+      - path: CrisisForecaster/Views/RiskStyle.swift
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.crisisforecaster.app.widget
+        CODE_SIGN_ENTITLEMENTS: CrisisWidget/CrisisWidget.entitlements
+        TARGETED_DEVICE_FAMILY: "1"
+    entitlements:
+      path: CrisisWidget/CrisisWidget.entitlements
+      properties:
+        com.apple.security.application-groups:
+          - group.com.crisisforecaster.app
+    info:
+      path: CrisisWidget/Info.plist
+      properties:
+        CFBundleDisplayName: Crisis Risk
+        CFBundleShortVersionString: $(MARKETING_VERSION)
+        CFBundleVersion: $(CURRENT_PROJECT_VERSION)
+        NSExtension:
+          NSExtensionPointIdentifier: com.apple.widgetkit-extension

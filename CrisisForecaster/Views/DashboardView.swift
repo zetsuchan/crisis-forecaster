@@ -40,7 +40,7 @@ struct DashboardView: View {
                             Label("See the full picture", systemImage: "chart.xyaxis.line")
                                 .frame(maxWidth: .infinity)
                         }
-                        .buttonStyle(.bordered)
+                        .buttonStyle(.glass)
                     } else {
                         EmptyState { Task { await model.runScore() } }
                     }
@@ -79,7 +79,7 @@ struct DashboardView: View {
         content()
             .padding()
             .frame(maxWidth: .infinity, alignment: .leading)
-            .background(.thinMaterial, in: RoundedRectangle(cornerRadius: 16))
+            .glassCard(16)
     }
 }
 
@@ -205,7 +205,7 @@ private struct EngineBadges: View {
         }
         .padding(.horizontal, 12).padding(.vertical, 8)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .background(.thinMaterial, in: RoundedRectangle(cornerRadius: 12))
+        .glassCard(12)
     }
 }
 
@@ -228,7 +228,7 @@ private struct TriageNoteCard: View {
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding()
-        .background(.thinMaterial, in: RoundedRectangle(cornerRadius: 16))
+        .glassCard(16)
     }
 }
 
@@ -239,7 +239,7 @@ private struct ExplanationCard: View {
             .font(.body)
             .frame(maxWidth: .infinity, alignment: .leading)
             .padding()
-            .background(.thinMaterial, in: RoundedRectangle(cornerRadius: 16))
+            .glassCard(16)
     }
 }
 
@@ -281,7 +281,7 @@ private struct PassportStagedNote: View {
             .foregroundStyle(.secondary)
             .frame(maxWidth: .infinity, alignment: .leading)
             .padding()
-            .background(.thinMaterial, in: RoundedRectangle(cornerRadius: 16))
+            .glassCard(16)
     }
 }
 
@@ -297,7 +297,7 @@ private struct EmptyState: View {
             Button(action: run) {
                 Label("Run forecast", systemImage: "sparkles")
             }
-            .buttonStyle(.borderedProminent)
+            .buttonStyle(.glassProminent)
             .controlSize(.large)
         }
         .padding(.vertical, 40)

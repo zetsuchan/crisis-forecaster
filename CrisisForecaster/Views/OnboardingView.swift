@@ -54,7 +54,7 @@ struct OnboardingView: View {
                 Button("Back") {
                     withAnimation { step = Step(rawValue: step.rawValue - 1) ?? .welcome }
                 }
-                .buttonStyle(.bordered)
+                .buttonStyle(.glass)
             }
             Spacer()
             if step == .data {
@@ -66,13 +66,13 @@ struct OnboardingView: View {
                 } label: {
                     if finishing { ProgressView() } else { Text("Start forecasting") }
                 }
-                .buttonStyle(.borderedProminent)
+                .buttonStyle(.glassProminent)
                 .disabled(finishing)
             } else {
                 Button("Continue") {
                     withAnimation { step = Step(rawValue: step.rawValue + 1) ?? .data }
                 }
-                .buttonStyle(.borderedProminent)
+                .buttonStyle(.glassProminent)
             }
         }
         .controlSize(.large)
@@ -169,7 +169,7 @@ private struct DataSourceStep: View {
                     .foregroundStyle(selected ? Color.accentColor : Color.secondary)
             }
             .padding()
-            .background(.thinMaterial, in: RoundedRectangle(cornerRadius: 16))
+            .glassCard(16)
             .overlay(
                 RoundedRectangle(cornerRadius: 16)
                     .stroke(selected ? Color.accentColor : .clear, lineWidth: 2)
