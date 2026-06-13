@@ -12,3 +12,8 @@ build/
 
 # macOS
 .DS_Store
+
+# Remotion explainer
+demo/explainer/node_modules/
+demo/explainer/out/
+demo/explainer/.remotion/
