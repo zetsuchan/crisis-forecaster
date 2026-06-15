@@ -17,7 +17,7 @@ struct DashboardView: View {
                             RefreshingBanner()
                         }
                         RiskHero(risk: risk)
-                        EngineBadges()
+                        EngineBadges(route: model.routedVia)
                         if let triage = model.lastTriage {
                             TriageNoteCard(triage: triage)
                         }
@@ -195,10 +195,11 @@ private struct RiskHero: View {
 
 /// Shows the dual-model architecture: Apple's on-device model + Claude Opus 4.8.
 private struct EngineBadges: View {
+    let route: String
     var body: some View {
         HStack(spacing: 8) {
             badge("apple.logo", "Apple Intelligence", "on-device triage", .secondary)
-            badge("sparkles", "Claude Opus 4.8", "forecast", .orange)
+            badge("sparkles", "Claude Opus 4.8", "via \(route)", .orange)
         }
         .frame(maxWidth: .infinity)
     }

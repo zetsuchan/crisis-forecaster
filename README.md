@@ -26,6 +26,11 @@ Two models, clean division of labor:
   guided generation via `@Generable`; availability-gated with a transparent fallback.)
 - **Claude Opus 4.8 (cloud) — the specialist.** Takes the on-device digest plus 14 days of
   vitals and the weather and does the deep 24–72h forecast + the ER Passport.
+  - Routed **through Apple's Foundation Models framework** via Anthropic's
+    [`ClaudeForFoundationModels`](https://github.com/anthropics/ClaudeForFoundationModels)
+    package — Claude is driven with the same `LanguageModelSession` API as the on-device
+    model, with `@Generable` structured output (`Services/FoundationModelsForecaster.swift`).
+    Falls back to a raw-`URLSession` client (`Services/ClaudeClient.swift`) if that path errors.
 
 Cheap/private/local pre-digestion → frontier reasoning. The Today tab surfaces both
 ("Apple Intelligence · on-device" + "Claude Opus 4.8") so the flow is legible.

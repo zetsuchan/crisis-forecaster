@@ -22,6 +22,11 @@ configFiles:
   Debug: Config/Secrets.xcconfig
   Release: Config/Secrets.xcconfig
 
+packages:
+  ClaudeForFoundationModels:
+    url: https://github.com/anthropics/ClaudeForFoundationModels.git
+    from: "0.1.0"
+
 # Explicit shared scheme so "CrisisForecaster" (the app) is the canonical run target.
 # Hit Play on THIS scheme, not the auto-created CrisisWidget one.
 schemes:
@@ -49,6 +54,7 @@ targets:
     dependencies:
       - target: CrisisWidget
         embed: true
+      - package: ClaudeForFoundationModels
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.crisisforecaster.app

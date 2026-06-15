@@ -45,6 +45,10 @@ final class AppModel {
     /// Which tab is showing (lets the Today CTA jump to Check-in).
     var selectedTab: String = "today"
 
+    /// How the last forecast reached Claude: via Apple's Foundation Models framework
+    /// (the iOS 27 provider path) or the direct URLSession fallback.
+    var routedVia: String = "Foundation Models"
+
     /// Recommended actions the patient has checked off for the current forecast.
     var completedActions: Set<String> = []
 
@@ -109,13 +113,25 @@ final class AppModel {
     /// the passport.
     func runScore() async {
         phase = .scoring
-        let engine = RiskEngine(claude: ClaudeClient())
         do {
             let gathered = try await healthSource.recentVitals(days: 14)
             let weather = try await weatherProvider.currentWeather()
             vitals = gathered
 
-            let snapshot = try await engine.score(profile: profile, vitals: gathered, weather: weather, checkIn: latestCheckIn, triageNote: lastTriage?.summary)
+            // Primary: Claude routed through Apple's Foundation Models (iOS 27).
+            // Fallback: the direct URLSession client if the FM path errors.
+            let snapshot: RiskSnapshot
+            do {
+                snapshot = try await FoundationModelsForecaster().score(
+                    profile: profile, vitals: gathered, weather: weather,
+                    checkIn: latestCheckIn, triageNote: lastTriage?.summary)
+                routedVia = "Foundation Models"
+            } catch {
+                snapshot = try await RiskEngine(claude: ClaudeClient()).score(
+                    profile: profile, vitals: gathered, weather: weather,
+                    checkIn: latestCheckIn, triageNote: lastTriage?.summary)
+                routedVia = "direct API"
+            }
             risk = snapshot
             completedActions = []  // fresh forecast → fresh checklist
             try? store.saveRisk(snapshot)
